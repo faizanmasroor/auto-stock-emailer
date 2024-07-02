@@ -1,4 +1,6 @@
 import datetime
+import re
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -48,7 +50,7 @@ def filter_data(df: pd.DataFrame, time_length) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    tk_in = input("Enter a ticker symbol: ")
+    tk_in = sys.argv[1]
     tk = yf.Ticker(tk_in.upper())
 
     month_hist = get_data(tk, "3mo", "1d")
@@ -69,9 +71,8 @@ if __name__ == "__main__":
     plt.xlim(0, 32)
     plt.ylabel('High (USD)')
     plt.grid()
-    plt.savefig(f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_monthplot_{now.strftime('%Y%m%d')}.png")
-    plt.show()
-    plt.close()
+    month_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_monthplot_{now.strftime('%Y%m%d')}.png"
+    plt.savefig(month_plot_filename)
 
     day_plot = sns.lineplot(x=day_hist.DecimalHour, y=day_hist.High)
     plt.title(f"{last_trade_day.strftime('%B %d, %Y')}, {tk_in.upper()} Stock Price (Last Trading Day)")
@@ -79,6 +80,7 @@ if __name__ == "__main__":
     plt.xlabel('Hour')
     plt.ylabel('High (USD)')
     plt.grid()
-    plt.savefig(f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_dayplot_{now.strftime('%Y%m%d')}.png")
-    plt.show()
-    plt.close()
+    day_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_dayplot_{now.strftime('%Y%m%d')}.png"
+    plt.savefig(day_plot_filename)
+
+    print(month_plot_filename, day_plot_filename, f"{last_trade_day.strftime('%m/%d/%Y')}", sep=":")

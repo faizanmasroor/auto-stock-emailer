@@ -1,5 +1,6 @@
 from email.message import EmailMessage
 from os import environ
+from re import sub
 from sys import argv
 
 import imghdr
@@ -31,10 +32,8 @@ def add_image(msg: EmailMessage, file_name):
 
             msg.add_attachment(img_data, maintype='image', subtype=img_type, filename=img_name)
 
-        print("Image successfully added.\n")
-
     except FileNotFoundError:
-        print("The file you typed does not exist.\n")
+        print(f"The file you typed does not exist. : {img_name}\n")
 
     except TypeError:
         print("Invalid file format.\n")
@@ -50,14 +49,12 @@ def send_email(msg: EmailMessage):
         server.ehlo()
         server.login(sender_mail, sender_pass)
         server.send_message(msg)
-
-        print("\nEmail has been sent.")
-
         server.quit()
 
     except smtplib.SMTPAuthenticationError:
         print("\nYou gave the incorrect login information for your gmail account.")
         quit()
+
     except smtplib.SMTPRecipientsRefused:
         print("\nThe email address which you wish to email does not exist.")
         quit()
@@ -67,20 +64,11 @@ def send_email(msg: EmailMessage):
 # attachments and quits once "done" is entered. Calls send_email() on the EmailMessage
 def main():
     mail_recipient = argv[1]
-    mail_subject = "Subject"
-    mail_body = "Body"
-
+    mail_subject = sub(r"/s", " ", argv[2])
+    mail_body = sub(r"/s", " ", argv[3])
     email = create_email(mail_recipient, mail_subject, mail_body)
-
-    print("""\nIf you wish to attach images, enter your files one by one.
-Be sure to enter the relative location of each image (ex., "image.png", "../picture.jpg", "../data/graph.svg", etc.)
-Once you are done, enter "done\".""")
-    while True:
-        img_name = input(">>> ")
-        if img_name.lower() == 'done':
-            break
-        add_image(email, img_name)
-
+    for i in range(4, len(argv)):
+        add_image(email, argv[i])
     send_email(email)
 
 

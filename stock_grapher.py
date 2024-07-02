@@ -83,4 +83,5 @@ if __name__ == "__main__":
     day_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_dayplot_{now.strftime('%Y%m%d')}.png"
     plt.savefig(day_plot_filename)
 
+    # Prints the graph names and current date, separated by a colon for easy parsing for the PowerShell script
     print(month_plot_filename, day_plot_filename, f"{last_trade_day.strftime('%m/%d/%Y')}", sep=":")

@@ -60,8 +60,8 @@ def send_email(msg: EmailMessage):
         quit()
 
 
-# Prompts for recipient email, subject line, and body; all info is crafted into an EmailMessage. Prompts for image
-# attachments and quits once "done" is entered. Calls send_email() on the EmailMessage
+# Retrieves the email recipient, converts "/s" into spaces for the subject line and email body, and iterates through
+# all remaining arguments (representing file names) and calling add_image() on them
 def main():
     mail_recipient = argv[1]
     mail_subject = sub(r"/s", " ", argv[2])

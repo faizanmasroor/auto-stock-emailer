@@ -1,5 +1,5 @@
 from email.message import EmailMessage
-from os import environ
+from os import environ, path
 from re import sub
 from sys import argv
 
@@ -36,10 +36,10 @@ def add_image(msg: EmailMessage, file_name):
             msg.add_attachment(img_data, maintype='image', subtype=img_type, filename=img_name)
 
     except FileNotFoundError:
-        print(f"The file you typed does not exist. : {img_name}\n")
+        print(f"The file {img_name} does not exist.")
 
     except TypeError:
-        print("Invalid file format.\n")
+        print(f"{img_name} is in an invalid file format.")
 
 
 # Establishes a session with Gmail's SMTP port, starts TLS encryption, logs into sender email account,
@@ -71,7 +71,7 @@ def main():
     mail_body = sub(r"/s", " ", argv[3])
     email = create_email(mail_recipient, mail_subject, mail_body)
     for i in range(4, len(argv)):
-        add_image(email, argv[i])
+        add_image(email, path.abspath(__file__) + "\\..\\Graphs\\" + argv[i])
     send_email(email)
     print("Email sent successfully.")
 

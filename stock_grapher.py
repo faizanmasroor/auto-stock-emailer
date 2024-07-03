@@ -1,4 +1,5 @@
 import datetime
+import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -6,8 +7,10 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import yfinance as yf
+
 today = datetime.date.today()
 now = datetime.datetime.now()
+file_path = os.path.abspath(__file__)
 
 
 # Retrieves a Pandas DataFrame with the financial history of a stock
@@ -74,7 +77,7 @@ if __name__ == "__main__":
         plt.ylabel('High (USD)')
         plt.grid()
         month_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_mplot_{now.strftime('%Y%m%d')}.png"
-        plt.savefig(month_plot_filename)
+        plt.savefig(file_path + "\\..\\Graphs\\" + month_plot_filename)
         plt.clf()
 
         day_plot = sns.lineplot(x=day_hist.DecimalHour, y=day_hist.High)
@@ -84,7 +87,7 @@ if __name__ == "__main__":
         plt.ylabel('High (USD)')
         plt.grid()
         day_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_dplot_{now.strftime('%Y%m%d')}.png"
-        plt.savefig(day_plot_filename)
+        plt.savefig(file_path + "\\..\\Graphs\\" + day_plot_filename)
         plt.clf()
 
         # Prints the graph names and current date, separated by a colon for easy parsing for the PowerShell script

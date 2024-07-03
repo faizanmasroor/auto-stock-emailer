@@ -12,34 +12,40 @@ $tickerLists = @($csvTable.tickerlist)
 the arguments, store the graph file names and date (of the last trading day) given by the graph script's output,
 and run email_sender.py with email attributes and graph file names as arguments. #>
 for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
+    <# Variables declaration for the current iteration, edge case handling (misc. spaces in tickerlist),
+    and empty tickerlist handling #>
     $email = $emails[$csvIdx]
-    $tickerList = $tickerLists[$csvIdx]
+    $tickerList = $tickerLists[$csvIdx] -replace '\s',''
     $tickers = $tickerList.split(",")
     $imageNames = @()
-
     Write-Output "<==========$email==========>`nRetrieving stock data for $($tickers.ToUpper() -join ", " ) ..."
-    $output = & python $graphScript $tickers
-
-    if ($output[-1] -eq "NoStockError") {
-        Write-Output "FATAL: All entered stocks ($($tickers.ToUpper() -join ", " )) are invalid."
+    if ($tickerList.length -eq 0) {
+        Write-Output "No stocks entered for $email."
         continue
     }
 
-    <# Each "token" is an individual file name, error message, or the date of the stock reports (one per graph
-    script exeuction) #>
-    $tokens = $output.split(":")
-    for ($tokenIdx = 0; $tokenIdx -lt $tokens.length-1; $tokenIdx++) {
-        if ($tokens[$tokenIdx] -eq "InvalidStockError") {continue}  # stock_grapher.py catches invalid stocks
-        $imageNames += $tokens[$tokenIdx]
+    <# Executes Python script whose output is divided into tokens (file name, error, stock report date) by
+    linebreaks, making $outputTokens iterable #>
+    $outputTokens = & python $graphScript $tickers
+    if ($outputTokens[-1] -eq "NoStockError") {
+        Write-Output "FATAL: All entered stocks for $email ($($tickers.ToUpper() -join ", " )) are invalid."
+        continue
     }
-    $date = $tokens[-1]
+    <# Iterates through $outputTokens (except the last token, which is the stock report date) and appends all graph
+    file names to $imageNames #>
+    for ($tokenIdx = 0; $tokenIdx -lt $outputTokens.length-1; $tokenIdx++) {
+        if ($outputTokens[$tokenIdx] -eq "InvalidStockError") {continue}
+        $imageNames += $outputTokens[$tokenIdx]
+    }
+    $date = $outputTokens[-1]
 
     Write-Output "Data retrieval complete ..."
-    Write-Output "`nStock Retrieval Success Rate: $($imageNames.Count/2)/$($tickers.Count) [$(100*($imageNames.Count/2)/($tickers.Count))%]`n"
+    Write-Output "`n# of Stocks Retrieved: $($imageNames.Count/2)/$($tickers.Count) [$(100*($imageNames.Count/2)/($tickers.Count))%]`n"
 
     Write-Output "Sending email ..."
     $subject = "Daily/sStock/sReport/sfor/s$date"
     $body = "Here/sare/sthe/slast/strading/sday's/sprice/sgraphs/sfor/syour/spreferred/sstocks."
+    <# Sends the email with stock graphs attached #>
     Start-Process python -ArgumentList "$emailScript $email $subject $body $imageNames" -Wait -NoNewWindow
     Write-Output "Email successfully sent!`n"
 }

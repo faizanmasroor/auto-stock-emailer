@@ -90,7 +90,7 @@ if __name__ == "__main__":
         plt.clf()
 
         # Prints the graph names and current date, separated by a colon for easy parsing for the PowerShell script
-        print(month_plot_filename, day_plot_filename, sep=":", end=":")
+        print(month_plot_filename, day_plot_filename, sep='\n')
 
     try:
         print(f"{last_trade_day.strftime('%m/%d/%Y')}") # Prints the date of the stock report(s) for PS script to use

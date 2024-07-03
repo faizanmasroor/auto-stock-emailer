@@ -7,26 +7,35 @@ $csvTable = Import-Csv -Path $csvFilePath
 $emails = @($csvTable.email)
 $tickerLists = @($csvTable.tickerlist)
 
-<# For loop that iterates through row in email_list.csv and does several tasks: get the email and ticker portfolio
+<# For loop that iterates through each row in email_list.csv and does several tasks: get the email and ticker portfolio
 ($tickerList) of the current row, turn $tickerList into an array ($tickers), run stock_grapher.py with $tickers as
-the arguments, store the graph file names and date (of the last trading day) by parsing the script's string output,
+the arguments, store the graph file names and date (of the last trading day) given by the graph script's output,
 and run email_sender.py with email attributes and graph file names as arguments. #>
-for ($index = 0; $index -lt $csvTable.length; $index++) {
-    $email = $emails[$index]
-    $tickerList = $tickerLists[$index]
+for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
+    $email = $emails[$csvIdx]
+    $tickerList = $tickerLists[$csvIdx]
     $tickers = $tickerList.split(",")
+    $imageNames = @()
 
     Write-Output "<==========$email==========>`nRetrieving stock data for $($tickers.ToUpper() -join ", " ) ..."
     $output = & python $graphScript $tickers
-    Write-Output "Data retrieval complete ..."
-    $tokens = $output.split(":")
-    if ($tokens[0] -eq "0") {
-        # TODO: Add error handling in case of invalid ticker symbol (logic found in stock_grapher.py)
+
+    if ($output[-1] -eq "NoStockError") {
+        Write-Output "FATAL: All entered stocks ($($tickers.ToUpper() -join ", " )) are invalid."
+        continue
     }
-    $imageNames = $tokens[0..($tokens.Count-2)]
+
+    <# Each "token" is an individual file name, error message, or the date of the stock reports (one per graph
+    script exeuction) #>
+    $tokens = $output.split(":")
+    for ($tokenIdx = 0; $tokenIdx -lt $tokens.length-1; $tokenIdx++) {
+        if ($tokens[$tokenIdx] -eq "InvalidStockError") {continue}  # stock_grapher.py catches invalid stocks
+        $imageNames += $tokens[$tokenIdx]
+    }
     $date = $tokens[-1]
-    Write-Output "Data parsing complete ..."
-    Write-Output "Files saved: $($imageNames.Count)/$($tickers.Count*2) [$(100*$imageNames.Count/($tickers.Count*2))%]`n"
+
+    Write-Output "Data retrieval complete ..."
+    Write-Output "`nStock Retrieval Success Rate: $($imageNames.Count/2)/$($tickers.Count) [$(100*($imageNames.Count/2)/($tickers.Count))%]`n"
 
     Write-Output "Sending email ..."
     $subject = "Daily/sStock/sReport/sfor/s$date"

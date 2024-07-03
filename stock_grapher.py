@@ -6,28 +6,24 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import yfinance as yf
+from pandas import DataFrame
 
 today = datetime.date.today()
 now = datetime.datetime.now()
 
 
 # Retrieves a Pandas DataFrame with the financial history of a stock
-def get_data(ticker: yf.Ticker, period, interval) -> pd.DataFrame:
+def get_data(ticker: yf.Ticker, period, interval) -> DataFrame:
     hist = ticker.history(period=period, interval=interval)
 
-    # Error validation for invalid stock inputs (Ticker objects created with invalid ticker symbols will be missing some
-    # columns)
-    try:
-        hist['Timestamp'] = hist.index
-        hist['Minute'] = hist.Timestamp.dt.minute
-        hist['Hour'] = hist.Timestamp.dt.hour
-        hist['DecimalHour'] = hist.Timestamp.dt.hour  # This column is updated via hour_decimalize()
-        hist['Day'] = hist.Timestamp.dt.day
-        hist['Month'] = hist.Timestamp.dt.month
-        hist['Year'] = hist.Timestamp.dt.year
-    except AttributeError:
-        print("Error:Invalid ticker symbol.")
-        quit()
+    # Creates additional columns from 'Timestamp' to measure time (month, day, year, etc.)
+    hist['Timestamp'] = hist.index
+    hist['Minute'] = hist.Timestamp.dt.minute
+    hist['Hour'] = hist.Timestamp.dt.hour
+    hist['DecimalHour'] = hist.Timestamp.dt.hour  # This column is updated via hour_decimalize()
+    hist['Day'] = hist.Timestamp.dt.day
+    hist['Month'] = hist.Timestamp.dt.month
+    hist['Year'] = hist.Timestamp.dt.year
     return hist
 
 
@@ -53,8 +49,15 @@ if __name__ == "__main__":
         tk_in = sys.argv[i]
         tk = yf.Ticker(tk_in.upper())
 
-        month_hist = get_data(tk, "3mo", "1d")
-        day_hist = get_data(tk, "5d", "30m")
+        try:
+            month_hist = get_data(tk, "3mo", "1d")
+            day_hist = get_data(tk, "5d", "30m")
+
+        # Occurs when a Ticker object with an invalid ticker symbol gets get_data() called (an invalid stock's DataFrame
+        # will be missing some columns and throw this error)
+        except AttributeError:
+            print("InvalidStockError")
+            continue
 
         month_hist = clean_data(month_hist)
         day_hist = clean_data(day_hist)
@@ -88,4 +91,10 @@ if __name__ == "__main__":
 
         # Prints the graph names and current date, separated by a colon for easy parsing for the PowerShell script
         print(month_plot_filename, day_plot_filename, sep=":", end=":")
-    print(f"{last_trade_day.strftime('%m/%d/%Y')}")
+
+    try:
+        print(f"{last_trade_day.strftime('%m/%d/%Y')}") # Prints the date of the stock report(s) for PS script to use
+
+    # Occurs when all stocks are invalid
+    except NameError:
+        print("NoStockError")

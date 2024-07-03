@@ -12,13 +12,17 @@ $tickerLists = @($csvTable.tickerlist)
 the arguments, store the graph file names and date (of the last trading day) given by the graph script's output,
 and run email_sender.py with email attributes and graph file names as arguments. #>
 for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
-    <# Variables declaration for the current iteration, edge case handling (misc. spaces in tickerlist),
-    and empty tickerlist handling #>
+    <# Variables declaration for the current iteration, edge case handling (misc. spaces in tickerlist, empty
+    entries) #>
     $email = $emails[$csvIdx]
     $tickerList = $tickerLists[$csvIdx] -replace '\s',''
     $tickers = $tickerList.split(",")
     $imageNames = @()
     Write-Output "<==========$email==========>`nRetrieving stock data for $($tickers.ToUpper() -join ", " ) ..."
+    if ($email.length -eq 0) {
+        Write-Output "No email entered at row $($csvIdx+1)."
+        continue
+    }
     if ($tickerList.length -eq 0) {
         Write-Output "No stocks entered for $email."
         continue

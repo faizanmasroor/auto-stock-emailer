@@ -6,14 +6,12 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import yfinance as yf
-from pandas import DataFrame
-
 today = datetime.date.today()
 now = datetime.datetime.now()
 
 
 # Retrieves a Pandas DataFrame with the financial history of a stock
-def get_data(ticker: yf.Ticker, period, interval) -> DataFrame:
+def get_data(ticker: yf.Ticker, period, interval) -> pd.DataFrame:
     hist = ticker.history(period=period, interval=interval)
 
     # Creates additional columns from 'Timestamp' to measure time (month, day, year, etc.)
@@ -93,8 +91,6 @@ if __name__ == "__main__":
         print(month_plot_filename, day_plot_filename, sep='\n')
 
     try:
-        print(f"{last_trade_day.strftime('%m/%d/%Y')}") # Prints the date of the stock report(s) for PS script to use
-
-    # Occurs when all stocks are invalid
-    except NameError:
+        print(f"{last_trade_day.strftime('%m/%d/%Y')}")  # Prints the date of the stock report(s) for PS script to use
+    except NameError:  # Occurs when all stocks are invalid
         print("NoStockError")

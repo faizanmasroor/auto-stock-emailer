@@ -5,8 +5,12 @@ from sys import argv
 
 import smtplib
 
-sender_mail = environ['SENDER_MAIL']
-sender_pass = environ['SENDER_PASS']
+try:
+    sender_mail = environ['SENDER_MAIL']
+    sender_pass = environ['SENDER_PASS']
+except KeyError as e:
+    print(f"Environment variable {str(e)[1:-1]} was not found.")
+    quit()
 
 
 # Creates an EmailMessage object with the recipient email, subject line, and body (as parameters)
@@ -51,11 +55,11 @@ def send_email(msg: EmailMessage):
         server.quit()
 
     except smtplib.SMTPAuthenticationError:
-        print("\nYou gave the incorrect login information for your gmail account.")
+        print("Invalid login credentials.")
         quit()
 
     except smtplib.SMTPRecipientsRefused:
-        print("\nThe email address which you wish to email does not exist.")
+        print(f"The email address {EmailMessage['To']} does not exist.")
         quit()
 
 
@@ -69,6 +73,7 @@ def main():
     for i in range(4, len(argv)):
         add_image(email, argv[i])
     send_email(email)
+    print("Email sent successfully.")
 
 
 if __name__ == "__main__":

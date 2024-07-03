@@ -51,5 +51,4 @@ for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
     $body = "Here/sare/sthe/slast/strading/sday's/sprice/sgraphs/sfor/syour/spreferred/sstocks."
     <# Sends the email with stock graphs attached #>
     Start-Process python -ArgumentList "$emailScript $email $subject $body $imageNames" -Wait -NoNewWindow
-    Write-Output "Email successfully sent!`n"
 }

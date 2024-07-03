@@ -26,7 +26,7 @@ def get_data(ticker: yf.Ticker, period, interval) -> pd.DataFrame:
         hist['Month'] = hist.Timestamp.dt.month
         hist['Year'] = hist.Timestamp.dt.year
     except AttributeError:
-        print("Invalid ticker symbol.")
+        print("Error:Invalid ticker symbol.")
         quit()
     return hist
 
@@ -49,38 +49,43 @@ def filter_data(df: pd.DataFrame, time_length) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    tk_in = sys.argv[1]
-    tk = yf.Ticker(tk_in.upper())
+    for i in range(1, len(sys.argv)):
+        tk_in = sys.argv[i]
+        tk = yf.Ticker(tk_in.upper())
 
-    month_hist = get_data(tk, "3mo", "1d")
-    day_hist = get_data(tk, "5d", "30m")
+        month_hist = get_data(tk, "3mo", "1d")
+        day_hist = get_data(tk, "5d", "30m")
 
-    month_hist = clean_data(month_hist)
-    day_hist = clean_data(day_hist)
+        month_hist = clean_data(month_hist)
+        day_hist = clean_data(day_hist)
 
-    month_hist = filter_data(month_hist, time_length='Month')
-    day_hist = filter_data(day_hist, time_length='Day')
+        month_hist = filter_data(month_hist, time_length='Month')
+        day_hist = filter_data(day_hist, time_length='Day')
 
-    # Modify the "DecimalHour" column to represent decimal values (8.5, 9.5, 10.5, etc.) in rows where "Minutes" is 30
-    day_hist['DecimalHour'] = np.where(day_hist['Minute'] == 30, day_hist['Hour'] + 0.5, day_hist['Hour'])
+        # Modify the "DecimalHour" column to represent decimal values (8.5, 9.5, 10.5, etc.) in rows where "Minutes"
+        # is 30
+        day_hist['DecimalHour'] = np.where(day_hist['Minute'] == 30, day_hist['Hour'] + 0.5, day_hist['Hour'])
 
-    last_trade_day = datetime.date(day_hist.iloc[0]['Year'], day_hist.iloc[0]['Month'], day_hist.iloc[0]['Day'])
-    month_plot = sns.lineplot(x=month_hist.Day, y=month_hist.High)
-    plt.title(f"{last_trade_day.strftime('%B %Y')} {tk_in.upper()} Stock Price")
-    plt.xlim(0, 32)
-    plt.ylabel('High (USD)')
-    plt.grid()
-    month_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_monthplot_{now.strftime('%Y%m%d')}.png"
-    plt.savefig(month_plot_filename)
+        last_trade_day = datetime.date(day_hist.iloc[0]['Year'], day_hist.iloc[0]['Month'], day_hist.iloc[0]['Day'])
+        month_plot = sns.lineplot(x=month_hist.Day, y=month_hist.High)
+        plt.title(f"{last_trade_day.strftime('%B %Y')} {tk_in.upper()} Stock Price")
+        plt.xlim(0, 32)
+        plt.ylabel('High (USD)')
+        plt.grid()
+        month_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_mplot_{now.strftime('%Y%m%d')}.png"
+        plt.savefig(month_plot_filename)
+        plt.clf()
 
-    day_plot = sns.lineplot(x=day_hist.DecimalHour, y=day_hist.High)
-    plt.title(f"{last_trade_day.strftime('%B %d, %Y')}, {tk_in.upper()} Stock Price (Last Trading Day)")
-    plt.xlim(9, 16)
-    plt.xlabel('Hour')
-    plt.ylabel('High (USD)')
-    plt.grid()
-    day_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_dayplot_{now.strftime('%Y%m%d')}.png"
-    plt.savefig(day_plot_filename)
+        day_plot = sns.lineplot(x=day_hist.DecimalHour, y=day_hist.High)
+        plt.title(f"{last_trade_day.strftime('%B %d, %Y')}, {tk_in.upper()} Stock Price (Last Trading Day)")
+        plt.xlim(9, 16)
+        plt.xlabel('Hour')
+        plt.ylabel('High (USD)')
+        plt.grid()
+        day_plot_filename = f"{tk_in.lower()}_{last_trade_day.strftime('%Y%b%d')}_dplot_{now.strftime('%Y%m%d')}.png"
+        plt.savefig(day_plot_filename)
+        plt.clf()
 
-    # Prints the graph names and current date, separated by a colon for easy parsing for the PowerShell script
-    print(month_plot_filename, day_plot_filename, f"{last_trade_day.strftime('%m/%d/%Y')}", sep=":")
+        # Prints the graph names and current date, separated by a colon for easy parsing for the PowerShell script
+        print(month_plot_filename, day_plot_filename, sep=":", end=":")
+    print(f"{last_trade_day.strftime('%m/%d/%Y')}")

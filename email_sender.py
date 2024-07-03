@@ -27,7 +27,7 @@ def add_image(msg: EmailMessage, file_name):
     try:
         with open(file_name, 'rb') as f:
             img_data = f.read()
-            img_type = imghdr.what(f.name)
+            img_type = imghdr.what(f.name) # TODO: Find alternative way to get an image's filetype
             img_name = f.name
 
             msg.add_attachment(img_data, maintype='image', subtype=img_type, filename=img_name)

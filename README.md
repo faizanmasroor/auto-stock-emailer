@@ -24,6 +24,24 @@ git clone https://github.com/faizanmasroor/auto-stock-emailer.git
 ./Email-StockReports.ps1
 ```
 
-## Required Dependencies
+## Required Dependencies[^2]
 
-**WIP**
+* Python 3.12.4
+* matplotlib 3.8.4
+* NumPy 2.0.0
+* Pandas 2.2.2
+* Seaborn 0.13.2
+* yfinance 0.2.40 `pip install yfinance` or `conda install yfinance -c ranaroussi`
+
+## Video Demo
+https://github.com/faizanmasroor/auto-stock-emailer/assets/107204129/6faa9de5-aabc-4945-b3c5-b0ae6807a8b1
+
+## Goal
+**Create a simple and streamlined process to keep an emailing list up to date about the individual stocks in their portfolio by generating line graphs and emailing these images in a consistent and reliable form**
+
+## Methodology
+
+[WIP]
+
+[^1]: I would <b> HIGHLY </b> advise against using your primary Gmail account to run this script. Preferably, create an alt/throwaway Gmail account for automating your emails.
+[^2]: These are the versions the program was tested with; running the usual pip/conda installation commands without specifying package versions will likely not cause any dependency issues.

@@ -5,6 +5,7 @@ $graphScript = Join-Path $PSScriptRoot "stock_grapher.py"
 $emailScript = Join-Path $PSScriptRoot "email_sender.py"
 $csvTable = Import-Csv -Path $csvFilePath
 $emails = @($csvTable.email)
+$failedEmails = @()
 $tickerLists = @($csvTable.tickerlist)
 
 <# For loop that iterates through each row in email_list.csv and does several tasks: get the email and ticker portfolio
@@ -18,13 +19,15 @@ for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
     $tickerList = $tickerLists[$csvIdx] -replace '\s',''
     $tickers = $tickerList.split(",")
     $imageNames = @()
-    Write-Output "<==========$email==========>`nRetrieving stock data for $($tickers.ToUpper() -join ", " ) ..."
+    Write-Output "`n<==========$email==========>`nRetrieving stock data for $($tickers.ToUpper() -join ", " ) ..."
     if ($email.length -eq 0) {
         Write-Output "No email entered at row $($csvIdx+1)."
+        $failedEmails += $email
         continue
     }
     if ($tickerList.length -eq 0) {
         Write-Output "No stocks entered for $email."
+        $failedEmails += $email
         continue
     }
 
@@ -33,6 +36,7 @@ for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
     $outputTokens = & python $graphScript $tickers
     if ($outputTokens[-1] -eq "NoStockError") {
         Write-Output "FATAL: All entered stocks for $email ($($tickers.ToUpper() -join ", " )) are invalid."
+        $failedEmails += $email
         continue
     }
     <# Iterates through $outputTokens (except the last token, which is the stock report date) and appends all graph
@@ -52,3 +56,5 @@ for ($csvIdx = 0; $csvIdx -lt $csvTable.length; $csvIdx++) {
     <# Sends the email with stock graphs attached #>
     Start-Process python -ArgumentList "$emailScript $email $subject $body $imageNames" -Wait -NoNewWindow
 }
+Write-Output "`n<==========FINAL PROGRAM REPORT==========>"
+Write-Output "`n# of Emails Sent: $($emails.Count-$failedEmails.Count)/$($emails.Count) [$(100*$($emails.Count-$failedEmails.Count)/$($emails.Count))%]"

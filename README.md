@@ -37,7 +37,7 @@ git clone https://github.com/faizanmasroor/auto-stock-emailer.git
 https://github.com/faizanmasroor/auto-stock-emailer/assets/107204129/6faa9de5-aabc-4945-b3c5-b0ae6807a8b1
 
 ## Goal
-**Create a simple and streamlined process to keep an emailing list up to date about the individual stocks in their portfolio by generating line graphs and emailing these images in a consistent and reliable form**
+**Create a simple and streamlined process—through a PowerShell script—to keep an emailing list up to date about its constituents' stock portfolio by sending a formatted email to each member, containing personalized line graphs for their selected stocks **
 
 ## Methodology
 
